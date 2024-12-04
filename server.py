@@ -41,3 +41,45 @@ class server:
             threading.Thread(target=self.handle_client, args=(client,)).start()
 
 server("localhost", 1234).start_socket()
+
+# import os
+# import sys
+# import shutil
+
+# def fixed_input_ui():
+#     os.system('cls' if os.name == 'nt' else 'clear')  # Clear terminal at start
+#     terminal_size = shutil.get_terminal_size()
+#     terminal_height = terminal_size.lines
+#     input_position = (terminal_height - 2, 5)  # Fixed input near the bottom
+#     max_output_lines = terminal_height - 3  # Leave space for input and prompt
+#     output_lines = []  # Store printed lines
+
+#     try:
+#         while True:
+#             # Clear the input line and move the cursor
+#             sys.stdout.write(f"\033[{input_position[0]};0H\033[K")
+#             sys.stdout.write(f"\033[{input_position[0]};{input_position[1]}H")
+#             sys.stdout.write("Input: ")  # Display prompt
+#             sys.stdout.flush()
+
+#             # Read user input
+#             user_input = input()  # Cursor remains fixed here
+
+#             # Add the new line to the output buffer
+#             output_lines.append(f"You typed: {user_input}")
+
+#             # Keep only the last `max_output_lines` to avoid scrolling
+#             if len(output_lines) > max_output_lines:
+#                 output_lines.pop(0)
+
+#             # Redraw output lines
+#             for i, line in enumerate(output_lines):
+#                 sys.stdout.write(f"\033[{i+1};0H\033[K")  # Clear line
+#                 sys.stdout.write(line + '\n')
+            
+#             sys.stdout.flush()
+#     except KeyboardInterrupt:
+#         print("\nExiting...")
+
+
+# fixed_input_ui()

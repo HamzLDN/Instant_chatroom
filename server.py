@@ -21,16 +21,20 @@ class server:
 
     def handle_client(self, client):
         while True:
-            data = client.recv(4096)
-            if not data:
-                continue
-            if bytes([data[0]]) == SEND_ALL:
-                print(data)
-                self.send_all(data)
+            try:
+                data = client.recv(4096)
+                if not data:
+                    continue
+                if bytes([data[0]]) == SEND_ALL:
+                    print(data)
+                    self.send_all(data)
+            except Exception as e:
+                print(f"Error: {e}")
 
     def start_socket(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(self.max_sessions)
+        print(f"Server is listening on {self.ip}:{self.port}")
         while True:
             client, address = self.socket.accept()
             self.clients.append(client)

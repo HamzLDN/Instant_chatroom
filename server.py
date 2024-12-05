@@ -29,8 +29,11 @@ class server:
                 if bytes([data[0]]) == SEND_ALL:
                     self.send_all(username +data)
             except Exception as e:
-                print(f"Error: {e}")
-                
+                del self.clients[client]
+                print("deleted", client)
+                break
+        print(self.clients)
+        
     def recv_username(self, client):
         data = client.recv(20)
         print(data)

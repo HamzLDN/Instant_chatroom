@@ -5,7 +5,8 @@ SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
 USERNAME = b'\x40'
-# Im going to be using a linked list for storing the clienr information
+
+# Im going to be using a linked list for storing the client information
 
 class server:
     def __init__(self, ip:str,port:int, max_sessions=3) -> None:
@@ -29,7 +30,7 @@ class server:
                 if bytes([data[0]]) == SEND_ALL:
                     self.send_all(username +data)
             except Exception as e:
-                del self.clients[client]
+                self.clients.remove(client)
                 print("deleted", client)
                 break
         print(self.clients)

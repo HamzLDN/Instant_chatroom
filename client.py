@@ -6,21 +6,26 @@ from tkinter import scrolledtext
 SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
+USERNAME = b'\x40'
 
 class ChatClient:
-    def __init__(self, server_address='127.0.0.1', server_port=1234):
+    def __init__(self, server_address='127.0.0.1', server_port=1234, username="anonymous", chatroom=3):
         self.server_address = server_address
         self.server_port = server_port
         self.client_socket = None
         self.root = tk.Tk()
         self.chat_display = None
         self.message_entry = None
-
+        self.username = username
     def recv_messages(self):
         """Receive messages from the server and display them in the chat."""
         while True:
             try:
                 data = self.client_socket.recv(4096)
+                if data == CONNECTED:
+                    self.client_socket.send(USERNAME+self.username.encode())
+                    self.chat_display.insert(tk.END, "Connected to the server.\n")
+                    
                 if data:
                     print(data)
                     message = data.decode('utf-8', errors='ignore')
@@ -71,5 +76,7 @@ class ChatClient:
 
 
 if __name__ == "__main__":
-    client = ChatClient() # put ur own address. Default is the loopback address with port 1234
+    username = input("Please enter a username: ")
+    chatroom = int(input("Please enter a chatroom ID: "))
+    client = ChatClient(username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
     client.run_client()

@@ -4,7 +4,8 @@ import threading
 SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
-
+USERNAME = b'\x40'
+# Im going to be using a linked list for storing the clienr information
 
 class server:
     def __init__(self, ip:str,port:int, max_sessions=3) -> None:
@@ -19,17 +20,23 @@ class server:
         for client in self.clients:
             client.send(message)
 
-    def handle_client(self, client):
+    def handle_client(self, client, username):
         while True:
             try:
                 data = client.recv(4096)
                 if not data:
                     continue
                 if bytes([data[0]]) == SEND_ALL:
-                    print(data)
-                    self.send_all(data)
+                    self.send_all(username +data)
             except Exception as e:
                 print(f"Error: {e}")
+                
+    def recv_username(self, client):
+        data = client.recv(20)
+        print(data)
+        if bytes([data[0]]) == USERNAME:
+            print(data[1:].decode(), "Connected")
+            return data[1:] + b": "
 
     def start_socket(self):
         self.socket.bind((self.ip, self.port))
@@ -40,6 +47,8 @@ class server:
             self.clients.append(client)
             print(f"New connection from {address}")
             client.send(CONNECTED)
-            threading.Thread(target=self.handle_client, args=(client,)).start()
+            username = self.recv_username(client)
+            if username:
+                threading.Thread(target=self.handle_client, args=(client,username,)).start()
 
 server("localhost", 1234).start_socket()

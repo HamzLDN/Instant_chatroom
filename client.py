@@ -10,7 +10,7 @@ SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
 USERNAME = b'\x40'
-ROOM_ID = b'\x50'
+INVALID_USERNAME = b'\x50'
 
 
 class ChatClient:
@@ -32,20 +32,28 @@ class ChatClient:
             information = {"username": self.username, "chatroom": self.chatroom}
             client_info = json.dumps(information).encode('utf-8')
             self.coms.send(self.client_socket, USERNAME + client_info)
-            self.display_message("Connected to the server.")
+            data = self.coms.recv(self.client_socket)
+            if bytes([data[0]]) == INVALID_USERNAME: 
+                return "Invalid"
+            else:
+                self.display_message("Connected to the server.")
+                self.display_message(data.decode('utf-8', errors='ignore'))
+
         elif bytes([data[0]]) == SEND_ALL:
-            message = data.decode('utf-8', errors='ignore')
-            print(message)
-            self.display_message(message)
+
+            self.display_message(data.decode('utf-8', errors='ignore'))
         else: pass
 
-    def recv_messages(self):
+    def recv_messages(self, root):
         """Receive messages from the server and display them in the chat.""" 
         while True:
             try:
-                self.handle_and_display()
+                if self.handle_and_display() == "Invalid":
+                    print("Invalid Username")
+                    break
             except Exception as e:
                 print(e)
+                break
 
     def display_message(self, message):
         self.chat_display.config(state=tk.NORMAL)
@@ -65,7 +73,7 @@ class ChatClient:
             self.client_socket.connect((self.server_address, self.server_port))
             print(f"Connected to server at {self.server_address}:{self.server_port}")
             self.setup_gui()
-            threading.Thread(target=self.recv_messages, args=(), daemon=True).start()
+            threading.Thread(target=self.recv_messages, args=(self.root,), daemon=True).start()
             self.root.mainloop()
 
         except Exception as e:
@@ -89,5 +97,5 @@ class ChatClient:
 if __name__ == "__main__":
     username = input("Please enter a username: ")
     chatroom = input("Please enter a chatroom ID: ")
-    client = ChatClient(username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
+    client = ChatClient(server_address='2a02:c7c:a038:4100:d228:7c9:81bd:3b6a', username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
     client.run_client()

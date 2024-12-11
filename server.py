@@ -7,7 +7,7 @@ SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
 USERNAME = b'\x40'
-
+INVALID_USERNAME = b'\x50'
 class Node:
     def __init__(self, value, next_node=None):
         self.value = value
@@ -48,7 +48,8 @@ class server:
             'chatroom': {
                 1: {
                     'chat': LinkedList(None),
-                    'clients': []
+                    'clients': [],
+                    'username_list': []
                 }
             }
         }
@@ -65,17 +66,14 @@ class server:
             self.send_all(SEND_ALL + username + data, roomID)
 
 
-    def remove_clients(self, client):
-        self.clients.remove(client)
-        print("deleted", client)
-        client.close()
-
-    def handle_client(self, client, username, chatroom):
+    def handle_client(self, client, username, roomID):
         while True:
             try:
-                self.forward_chat(client, username, chatroom)
+                self.forward_chat(client, username + b': ', roomID)
             except Exception as e:
-                pass
+                if client in self.chatrooms['chatroom'][roomID]['clients']:
+                    self.chatrooms['chatroom'][roomID]['clients'].remove(client)
+                    self.chatrooms['chatroom'][roomID]['username_list'].remove(username)
                 
         print(self.clients)
         
@@ -91,19 +89,29 @@ class server:
 
     def join_chat(self, client):
         username, chatroom = self.recv_username(client)
+
         if chatroom not in self.chatrooms['chatroom']:
             self.chatrooms['chatroom'][chatroom] = {
                 'chat': LinkedList(None),
-                'clients': []
+                'clients': [],
+                'username_list': []
             }
+
+        if username not in self.chatrooms['chatroom'][chatroom]['username_list']:
+            self.chatrooms['chatroom'][chatroom]['username_list'].append(username)
+        else:
+            self.coms.send(client, INVALID_USERNAME)
+            return
+
         print(self.chatrooms)
         if client not in self.chatrooms['chatroom'][chatroom]['clients']:
             self.chatrooms['chatroom'][chatroom]['clients'].append(client)
+            print("NEW CLIENT APPENDED")
 
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
             self.coms.send(client, SEND_ALL+room.display_chatlogs()[:-1].encode('utf-8'))
-            threading.Thread(target=self.handle_client, args=(client,username + b": ", chatroom)).start()
+            threading.Thread(target=self.handle_client, args=(client,username, chatroom)).start()
             
 
     def start_socket(self):

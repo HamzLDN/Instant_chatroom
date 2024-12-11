@@ -29,8 +29,11 @@ class LinkedList:
             if current_node.value != None:
                 chatlogs += str(current_node.value) + "\n"
             current_node = current_node.next_node
-        return chatlogs
-        
+        return self.sort_chat(chatlogs)
+
+    def sort_chat(self, chat):
+        return "\n".join(chat.splitlines()[::-1])
+
 
 # Im going to be using a linked list for storing the client information
 
@@ -47,6 +50,7 @@ class server:
         self.chatrooms = {
             'chatroom': {
                 1: {
+                    'chatid': None,
                     'chat': LinkedList(None),
                     'clients': [],
                     'username_list': []
@@ -63,7 +67,7 @@ class server:
         data = self.coms.recv(client)
         if bytes([data[0]]) == SEND_ALL:
             self.chatrooms['chatroom'][roomID]['chat'].prepend((username + data[1:]).decode())
-            self.send_all(SEND_ALL + username + data, roomID)
+            self.send_all(SEND_ALL + username + data[1:], roomID)
 
 
     def handle_client(self, client, username, roomID):
@@ -92,6 +96,7 @@ class server:
 
         if chatroom not in self.chatrooms['chatroom']:
             self.chatrooms['chatroom'][chatroom] = {
+                'chatid': None,
                 'chat': LinkedList(None),
                 'clients': [],
                 'username_list': []
@@ -110,7 +115,7 @@ class server:
 
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
-            self.coms.send(client, SEND_ALL+room.display_chatlogs()[:-1].encode('utf-8'))
+            self.coms.send(client, SEND_ALL+room.display_chatlogs().encode('utf-8'))
             threading.Thread(target=self.handle_client, args=(client,username, chatroom)).start()
             
 
@@ -124,5 +129,5 @@ class server:
             self.coms.send(client, CONNECTED)
             self.join_chat(client)
 
-server = server("localhost", 1234)
+server = server("0.0.0.0", 1234)
 server.start_socket()

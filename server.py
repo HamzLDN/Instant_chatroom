@@ -2,7 +2,7 @@ import socket
 import threading
 import tcp_enhancer
 import json
-
+import time
 SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
@@ -128,7 +128,7 @@ class server:
                 self.coms.send(client, CONNECTED)
                 self.join_chat(client)
             except:
-                pass
+                time.sleep(1)
 
 server = server("0.0.0.0", 1234)
 server.start_socket()

@@ -3,6 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import scrolledtext
 import tcp_enhancer
+import json
 
 # Code for each data
 SEND_ALL = b'\x10'
@@ -21,14 +22,16 @@ class ChatClient:
         self.chat_display = None
         self.message_entry = None
         self.username = username
-        self.chatroom = chatroom.encode()
+        self.chatroom = chatroom
         self.coms = tcp_enhancer.coms()
 
     def handle_and_display(self):
         data = self.coms.recv(self.client_socket)
         if data == CONNECTED:
             print("CONNECTED")
-            self.coms.send(self.client_socket, USERNAME+self.username.encode())
+            information = {"username": self.username, "chatroom": self.chatroom}
+            client_info = json.dumps(information).encode('utf-8')
+            self.coms.send(self.client_socket, USERNAME + client_info)
             self.display_message("Connected to the server.")
         elif bytes([data[0]]) == SEND_ALL:
             message = data.decode('utf-8', errors='ignore')

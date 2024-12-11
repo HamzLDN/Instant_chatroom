@@ -78,9 +78,6 @@ class server:
                 if client in self.chatrooms['chatroom'][roomID]['clients']:
                     self.chatrooms['chatroom'][roomID]['clients'].remove(client)
                     self.chatrooms['chatroom'][roomID]['username_list'].remove(username)
-                
-        print(self.clients)
-        
         
     def recv_username(self, client):
         data = self.coms.recv(client)
@@ -109,6 +106,7 @@ class server:
             return
 
         print(self.chatrooms)
+
         if client not in self.chatrooms['chatroom'][chatroom]['clients']:
             self.chatrooms['chatroom'][chatroom]['clients'].append(client)
             print("NEW CLIENT APPENDED")
@@ -124,10 +122,13 @@ class server:
         self.socket.listen(self.max_sessions)
         print(f"Server is listening on {self.ip}:{self.port}")
         while True:
-            client, address = self.socket.accept()
-            print(f"New connection from {address}")
-            self.coms.send(client, CONNECTED)
-            self.join_chat(client)
+            try:
+                client, address = self.socket.accept()
+                print(f"New connection from {address}")
+                self.coms.send(client, CONNECTED)
+                self.join_chat(client)
+            except:
+                pass
 
 server = server("0.0.0.0", 1234)
 server.start_socket()

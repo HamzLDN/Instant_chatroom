@@ -112,7 +112,7 @@ class server:
 
         for i in range(len(number_of_clients)):
             print("="*20)
-            print("Room number ID:  ", roomID[i])
+            print("Chatroom name   :  ", roomID[i])
             print("Number of people:",number_of_clients[i])
             print("="*20)
             
@@ -136,7 +136,7 @@ class server:
             print(x)
     
     def show_chatroom(self, roomID):
-        print(self.chatrooms['chatroom'][roomID[2]]['chat'].display_chatlogs())
+        print(self.chatrooms['chatroom'][" ".join(roomID[2:])]['chat'].display_chatlogs())
 
     def show_help(self, _):
         print("'list chatrooms' to show all available chatrooms")

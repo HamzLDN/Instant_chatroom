@@ -66,6 +66,7 @@ class server:
             try:
                 self.forward_chat(client, username + b': ', roomID)
             except Exception as e:
+                # if client is in the clients list then we delete
                 if client in self.chatrooms['chatroom'][roomID]['clients']:
                     self.chatrooms['chatroom'][roomID]['clients'].remove(client)
                     self.chatrooms['chatroom'][roomID]['username_list'].remove(username)
@@ -83,12 +84,12 @@ class server:
 
         if chatroom not in self.chatrooms['chatroom']:
             self.chatrooms['chatroom'][chatroom] = {
-                'chatid': None,
                 'chat': LinkedList(None),
                 'clients': [],
                 'username_list': []
             }
-
+        
+        # Validates the username by checking if it exists or not
         if username not in self.chatrooms['chatroom'][chatroom]['username_list']:
             self.chatrooms['chatroom'][chatroom]['username_list'].append(username)
         else:
@@ -175,6 +176,7 @@ class server:
             except Exception as e: print(e)
 
     def start_socket(self):
+        # Binds the self.ip and self.port and listens up to 60 connections
         self.socket.bind((self.ip, self.port))
         self.socket.listen(self.max_sessions)
         print(f"Server is listening on {self.ip}:{self.port}")

@@ -101,7 +101,7 @@ class server:
 
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
-            self.coms.send(client, SEND_ALL+room.display_chatlogs().encode('utf-8'))
+            self.coms.send(client, SEND_ALL+room.display_chatlogs().encode('utf-8')[1:20000])
             threading.Thread(target=self.handle_client, args=(client,username, chatroom)).start()
     
     def show_active_chatroom(self, _):

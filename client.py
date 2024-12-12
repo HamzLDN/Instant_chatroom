@@ -37,11 +37,10 @@ class ChatClient:
                 return "Invalid"
             else:
                 self.display_message("Connected to the server.")
-                self.display_message(data.decode('utf-8', errors='ignore'))
+                self.display_message(data[1:].decode('utf-8', errors='ignore'))
 
         elif bytes([data[0]]) == SEND_ALL:
-
-            self.display_message(data.decode('utf-8', errors='ignore'))
+            self.display_message(data[1:].decode('utf-8', errors='ignore'))
         else: pass
 
     def recv_messages(self, root):
@@ -63,6 +62,8 @@ class ChatClient:
 
     def send_message(self):
         message = self.message_entry.get()
+        # to test out how the server reacts to 1 million bytes uncomment the code below and comment the code on top
+        # message = "A" * 1000000
         if message:
             self.coms.send(self.client_socket, SEND_ALL + message.encode('utf-8'))
             self.message_entry.delete(0, tk.END)
@@ -97,6 +98,5 @@ class ChatClient:
 if __name__ == "__main__":
     username = input("Please enter a username: ")
     chatroom = input("Please enter a chatroom ID: ")
-
     client = ChatClient(server_address = 'bluepilled.minecraftnoob.com', username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
     client.run_client()

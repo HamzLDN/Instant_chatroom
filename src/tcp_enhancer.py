@@ -10,9 +10,11 @@ class coms:
     def recv(self, client_sock):
         msg_len = self.receive_all(client_sock, 4)
         if not msg_len: return None
+        
         return self.receive_all(client_sock, struct.unpack('>I', msg_len)[0])
 
     def receive_all(self, client_sock, n):
+        if n > 20000: return None
         data = bytearray()
         while len(data) < n:
             packet = client_sock.recv(n - len(data))

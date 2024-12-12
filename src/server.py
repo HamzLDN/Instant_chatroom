@@ -83,6 +83,7 @@ class server:
         username, chatroom = self.recv_username(client)
 
         if chatroom not in self.chatrooms['chatroom']:
+
             self.chatrooms['chatroom'][chatroom] = {
                 'chat': LinkedList(None),
                 'clients': [],
@@ -92,12 +93,10 @@ class server:
         # Validates the username by checking if it exists or not
         if username not in self.chatrooms['chatroom'][chatroom]['username_list']:
             self.chatrooms['chatroom'][chatroom]['username_list'].append(username)
+            self.chatrooms['chatroom'][chatroom]['clients'].append(client)
         else:
             self.coms.send(client, INVALID_USERNAME)
             return
-
-        if client not in self.chatrooms['chatroom'][chatroom]['clients']:
-            self.chatrooms['chatroom'][chatroom]['clients'].append(client)
 
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
@@ -110,7 +109,6 @@ class server:
         for x in self.chatrooms['chatroom'].keys():
             number_of_clients.append(len(self.chatrooms['chatroom'][x]['clients']))
         number_of_clients, roomID = self.bubblesort(number_of_clients, list(self.chatrooms['chatroom'].keys()))
-
         for i in range(len(number_of_clients)):
             print("="*20)
             print("Chatroom name   :  ", roomID[i])
@@ -143,6 +141,15 @@ class server:
         print("'list chatrooms' to show all available chatrooms")
         print("'show chatroom <id>' to view chatlogs")
         print("'show active' to view active chatlogs")
+        print("'list ips <id>' to view ips in chatroom")
+
+    def list_ips(self, roomID):
+        chatroom = " ".join(roomID[2:])
+        if chatroom in self.chatrooms['chatroom']:
+            for i in range(len(self.chatrooms['chatroom'][chatroom]['clients'])):
+                values = self.chatrooms['chatroom'][chatroom]
+                print(values['clients'][i].getpeername()[0], values['username_list'][i])
+                
 
     def options(self):
         try:
@@ -157,6 +164,7 @@ class server:
                 'list chatrooms': self.list_chatrooms,
                 'show chatroom': self.show_chatroom,
                 'show active': self.show_active_chatroom,
+                'list ips': self.list_ips,
             }
 
             #this willmatch and execute the command

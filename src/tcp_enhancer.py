@@ -14,7 +14,7 @@ class coms:
         return self.receive_all(client_sock, struct.unpack('>I', msg_len)[0])
 
     def receive_all(self, client_sock, n):
-        if n > 20000: return None
+        if n > 20000: return "CANNOT SEND DATA OVER 20,000 word length"
         data = bytearray()
         while len(data) < n:
             packet = client_sock.recv(n - len(data))

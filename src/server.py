@@ -1,8 +1,9 @@
 import socket
 import threading
-import tcp_enhancer
+from src import tcp_enhancer
 import json
 import time
+
 SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
@@ -47,19 +48,9 @@ class server:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.coms = tcp_enhancer.coms()
         self.chatlogs = LinkedList(None)
-        self.chatrooms = {
-            'chatroom': {
-                1: {
-                    'chatid': None,
-                    'chat': LinkedList(None),
-                    'clients': [],
-                    'username_list': []
-                }
-            }
-        }
+        self.chatrooms = {'chatroom': {}}
 
     def send_all(self, message, roomID):
-        print(self.chatrooms['chatroom'][roomID]['clients'])
         for client in self.chatrooms['chatroom'][roomID]['clients']:
             self.coms.send(client, message)
 
@@ -81,7 +72,6 @@ class server:
         
     def recv_username(self, client):
         data = self.coms.recv(client)
-        print(data)
         if bytes([data[0]]) == USERNAME:
             data = json.loads(data[1:])
             return data['username'].encode('utf-8'), data['chatroom']
@@ -105,22 +95,90 @@ class server:
             self.coms.send(client, INVALID_USERNAME)
             return
 
-        print(self.chatrooms)
-
         if client not in self.chatrooms['chatroom'][chatroom]['clients']:
             self.chatrooms['chatroom'][chatroom]['clients'].append(client)
-            print("NEW CLIENT APPENDED")
 
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
             self.coms.send(client, SEND_ALL+room.display_chatlogs().encode('utf-8'))
             threading.Thread(target=self.handle_client, args=(client,username, chatroom)).start()
+    
+    def show_active_chatroom(self, _):
+        # Bubblesort algorythm to find most to least active chatroom
+        number_of_clients = []
+        for x in self.chatrooms['chatroom'].keys():
+            number_of_clients.append(len(self.chatrooms['chatroom'][x]['clients']))
+        number_of_clients, roomID = self.bubblesort(number_of_clients, list(self.chatrooms['chatroom'].keys()))
+
+        for i in range(len(number_of_clients)):
+            print("="*20)
+            print("Room number ID:  ", roomID[i])
+            print("Number of people:",number_of_clients[i])
+            print("="*20)
             
+
+    def bubblesort(self, arr, chat):
+        n = len(arr)
+        for i in range(n-1):
+            swapped = False
+            for j in range(n-i-1):
+                if arr[j] < arr[j+1]:
+                    arr[j], arr[j+1] = arr[j+1], arr[j]
+                    chat[j], chat[j+1] = chat[j+1], chat[j]
+                    swapped = True
+            if not swapped:
+                break
+        return arr, chat
+
+    def list_chatrooms(self, _):
+        print("CHATROOM LIST")
+        for x in self.chatrooms['chatroom'].keys():
+            print(x)
+    
+    def show_chatroom(self, roomID):
+        print(self.chatrooms['chatroom'][roomID[2]]['chat'].display_chatlogs())
+
+    def show_help(self, _):
+        print("'list chatrooms' to show all available chatrooms")
+        print("'show chatroom <id>' to view chatlogs")
+        print("'show active' to view active chatlogs")
+
+    def options(self):
+        try:
+            command = input("Command: ")
+            args = command.strip().split()
+            if not args:
+                print("Command not provided. Type 'help' to view available commands.")
+                return
+
+            commands = {
+                'help': self.show_help,
+                'list chatrooms': self.list_chatrooms,
+                'show chatroom': self.show_chatroom,
+                'show active': self.show_active_chatroom,
+            }
+
+            #this willmatch and execute the command
+            cmd_key = ' '.join(args[:2]) if len(args) > 1 else args[0]
+            if cmd_key in commands:
+                commands[cmd_key](args)
+            else:
+                print(f"Unknown command: {cmd_key}. Type 'help' for available commands.")
+
+        except Exception as e:
+            print(f"Error handling command: {e}")
+
+    def console(self):
+        print("You are now in the commandline Interface for the chatroom. Type help to see more options")
+        while True:
+            try: self.options()
+            except Exception as e: print(e)
 
     def start_socket(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(self.max_sessions)
         print(f"Server is listening on {self.ip}:{self.port}")
+        threading.Thread(target=self.console, args=()).start()
         while True:
             try:
                 client, address = self.socket.accept()
@@ -130,5 +188,3 @@ class server:
             except:
                 time.sleep(1)
 
-server = server("0.0.0.0", 1234)
-server.start_socket()

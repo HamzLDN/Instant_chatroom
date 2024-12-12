@@ -2,7 +2,7 @@ import socket
 import threading
 import tkinter as tk
 from tkinter import scrolledtext
-import tcp_enhancer
+from src import tcp_enhancer
 import json
 
 # Code for each data
@@ -97,5 +97,6 @@ class ChatClient:
 if __name__ == "__main__":
     username = input("Please enter a username: ")
     chatroom = input("Please enter a chatroom ID: ")
-    client = ChatClient(server_address = '2.223.6.241', username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
+    server_address = '2.223.6.241'
+    client = ChatClient( username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
     client.run_client()

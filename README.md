@@ -20,7 +20,7 @@ This project is written in python and it uses tcp sockets to send the data acros
 # Installation Guide
 
 ```bash
-  git clone git@github.com:HamzLDN/Instant_chatroom.git
+  git clone https://github.com/HamzLDN/Instant_chatroom.git
   cd Instant_chatroom
 ```
 

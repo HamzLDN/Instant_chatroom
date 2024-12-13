@@ -39,6 +39,7 @@ Available commands once you type `help`
 'list chatrooms' to show all available chatrooms
 'show chatroom <id>' to view chatlogs
 'show active' to view active chatlogs
+'list ips <id> to view connected users in chatroom
 ```
 
 

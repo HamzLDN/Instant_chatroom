@@ -3,12 +3,14 @@ import threading
 from src import tcp_enhancer
 import json
 import time
+import datetime
 
 SEND_ALL = b'\x10'
 DIRECT_MESSAGE = b'\x20'
 CONNECTED = b'\x30'
 USERNAME = b'\x40'
 INVALID_USERNAME = b'\x50'
+
 class Node:
     def __init__(self, value, next_node=None):
         self.value = value
@@ -30,10 +32,7 @@ class LinkedList:
             if current_node.value != None:
                 chatlogs += str(current_node.value) + "\n"
             current_node = current_node.next_node
-        return self.sort_chat(chatlogs)
-
-    def sort_chat(self, chat):
-        return "\n".join(chat.splitlines()[::-1])
+        return "\n".join(chatlogs.splitlines()[::-1]) 
 
 
 # Im going to be using a linked list for storing the client information
@@ -83,7 +82,6 @@ class server:
         username, chatroom = self.recv_username(client)
 
         if chatroom not in self.chatrooms['chatroom']:
-
             self.chatrooms['chatroom'][chatroom] = {
                 'chat': LinkedList(None),
                 'clients': [],
@@ -97,7 +95,6 @@ class server:
         else:
             self.coms.send(client, INVALID_USERNAME)
             return
-
         room = self.chatrooms['chatroom'][chatroom]['chat']
         if username:
             self.coms.send(client, SEND_ALL+room.display_chatlogs().encode('utf-8')[1:20000])
@@ -142,15 +139,35 @@ class server:
         print("'show chatroom <id>' to view chatlogs")
         print("'show active' to view active chatlogs")
         print("'list ips <id>' to view ips in chatroom")
+        print("'download chatroom <id>' to download a specific chatroom")
 
     def list_ips(self, roomID):
         chatroom = " ".join(roomID[2:])
         if chatroom in self.chatrooms['chatroom']:
             for i in range(len(self.chatrooms['chatroom'][chatroom]['clients'])):
                 values = self.chatrooms['chatroom'][chatroom]
-                print(values['clients'][i].getpeername()[0], values['username_list'][i])
-                
+                ip= values['clients'][i].getpeername()
+                print("{}:{}".format(ip[0],ip[1]), values['username_list'][i].decode())
 
+    def download_chatorom(self, roomID) -> None:
+        try:
+            self.create_chatroom_folder()
+        except:
+            print("Error creating folder and downloading file\nPlease check if you've got the right permission to create a directory")
+            return
+
+        timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        with open(timestamp+".txt", 'w') as f:
+            f.write(self.chatrooms['chatroom'][" ".join(roomID[2:])]['chat'].display_chatlogs())
+            print("Download complete. File has been saved to -> {}".format(timestamp))
+
+    def create_chatroom_folder(self) -> bool:
+        if not os.path.isdir("chatlogs"):
+            os.makedirs('chatlogs')
+            return True
+        else:
+            return False
+            
     def options(self):
         try:
             command = input("Command: ")
@@ -165,6 +182,7 @@ class server:
                 'show chatroom': self.show_chatroom,
                 'show active': self.show_active_chatroom,
                 'list ips': self.list_ips,
+                'download chatlogs': self.download_chatroom
             }
 
             #this willmatch and execute the command
@@ -197,4 +215,3 @@ class server:
                 self.join_chat(client)
             except:
                 time.sleep(1)
-

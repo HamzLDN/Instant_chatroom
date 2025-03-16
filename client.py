@@ -98,5 +98,5 @@ class ChatClient:
 if __name__ == "__main__":
     username = input("Please enter a username: ")
     chatroom = input("Please enter a chatroom ID: ")
-    client = ChatClient(server_address = 'bluepilled.minecraftnoob.com', username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
+    client = ChatClient(server_address = 'localhost', username=username, chatroom=chatroom) # put ur own address. Default is the loopback address with port 1234
     client.run_client()

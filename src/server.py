@@ -181,8 +181,7 @@ class server:
                 'list chatrooms': self.list_chatrooms,
                 'show chatroom': self.show_chatroom,
                 'show active': self.show_active_chatroom,
-                'list ips': self.list_ips,
-                'download chatlogs': self.download_chatroom
+                'list ips': self.list_ips
             }
 
             #this willmatch and execute the command
